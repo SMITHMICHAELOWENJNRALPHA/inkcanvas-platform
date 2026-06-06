@@ -2,10 +2,228 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>InkCanvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InkCanvas • Create Freely</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .editor-font { font-family: 'Inter', serif; }
+    .hero-font { font-family: 'Playfair Display', sans-serif; }
+    .page { display: none; }
+    .page.active { display: block; }
+  </style>
 </head>
-<body>
-  <!-- Full prototype with all pages -->
+<body class="bg-[#f8f5f0] dark:bg-[#1a1a1a] text-[#2c2c2c] dark:text-[#e5e5e5] min-h-screen transition-colors">
+  <!-- Top Navigation -->
+  <nav class="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md fixed w-full z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span id="platform-name" class="text-3xl hero-font text-violet-600 dark:text-violet-400 cursor-pointer" onclick="navigate('dashboard')">InkCanvas</span>
+      </div>
+      <div class="flex items-center gap-8 text-sm font-medium">
+        <button onclick="navigate('dashboard')" class="hover:text-violet-600 transition">Dashboard</button>
+        <button onclick="navigate('feed')" class="hover:text-violet-600 transition">Feed</button>
+        <button onclick="navigate('editor')" class="hover:text-violet-600 transition">Write</button>
+        <button onclick="navigate('profile')" class="hover:text-violet-600 transition">Profile</button>
+        <button onclick="navigate('chat')" class="hover:text-violet-600 transition">Chat</button>
+        <button onclick="navigate('admin')" class="px-5 py-2 text-xs border border-violet-300 dark:border-violet-700 rounded-2xl hover:bg-violet-50 dark:hover:bg-violet-950">Admin</button>
+        <button onclick="toggleMode()" id="mode-toggle" class="text-2xl px-2">🌞</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pt-24 max-w-7xl mx-auto px-6">
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="page active">
+      <h1 class="text-5xl font-semibold hero-font">Good morning, Alex. Here's what's happening with your work.</h1>
+      <p class="mt-4 text-xl text-gray-600 dark:text-gray-400">Your ideas are making waves.</p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <div class="bg-white dark:bg-[#252525] p-8 rounded-3xl">
+          <p class="text-sm uppercase tracking-widest text-gray-500">Total reads this month</p>
+          <p class="text-6xl font-semibold mt-3">12.4k</p>
+        </div>
+        <div class="bg-white dark:bg-[#252525] p-8 rounded-3xl">
+          <p class="text-sm uppercase tracking-widest text-gray-500">Crowd favorite</p>
+          <p class="text-2xl font-medium mt-6">"Finding Flow in Chaos"</p>
+        </div>
+        <div class="bg-white dark:bg-[#252525] p-8 rounded-3xl">
+          <p class="text-sm uppercase tracking-widest text-gray-500">New minds unlocked this week</p>
+          <p class="text-6xl font-semibold mt-3">87</p>
+        </div>
+      </div>
+
+      <div class="mt-12 bg-white dark:bg-[#252525] rounded-3xl p-12 text-center">
+        <p class="text-2xl text-gray-500">You haven't shared anything this week. Ready to post a new idea?</p>
+        <button onclick="navigate('editor')" class="mt-8 px-10 py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl text-lg">Create New Post</button>
+      </div>
+    </div>
+
+    <!-- Social Feed -->
+    <div id="feed" class="page">
+      <h2 class="text-4xl font-semibold mb-10">Community Feed</h2>
+      <div class="space-y-8" id="feed-posts">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div id="editor" class="page">
+      <div class="max-w-4xl mx-auto">
+        <input type="text" id="post-title" placeholder="Post title..." class="w-full text-4xl bg-transparent border-b border-gray-200 dark:border-gray-700 pb-4 focus:outline-none text-gray-800 dark:text-white">
+        <textarea id="editor-area" class="editor-font w-full h-[65vh] mt-8 bg-transparent text-2xl leading-relaxed resize-none focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="The canvas is yours. Start typing..."></textarea>
+      </div>
+      <div class="fixed bottom-8 right-8 flex gap-4">
+        <button onclick="saveDraft()" class="px-8 py-3 border border-gray-300 dark:border-gray-600 rounded-2xl">Save Draft</button>
+        <button onclick="publishPost()" class="px-10 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl">Share with the World</button>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div id="profile" class="page">
+      <div class="max-w-2xl mx-auto bg-white dark:bg-[#252525] rounded-3xl p-12">
+        <h2 class="text-4xl font-semibold mb-8">Your Creative Home</h2>
+        <div class="space-y-8">
+          <div>
+            <p class="text-sm mb-3">Tell the world who you are. Add a bio, links, and your vibe.</p>
+            <textarea class="w-full h-40 p-6 border border-gray-200 dark:border-gray-700 rounded-3xl bg-transparent" placeholder="Writer, thinker, late-night creator..."></textarea>
+          </div>
+          <button onclick="updateProfile()" class="w-full py-4 bg-violet-600 text-white rounded-2xl">Update Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div id="chat" class="page">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-4xl font-semibold mb-6">Community Chat</h2>
+        <div id="chat-window" class="h-96 bg-white dark:bg-[#252525] rounded-3xl p-8 overflow-y-auto space-y-6 mb-6">
+          <!-- Messages populated by JS -->
+        </div>
+        <div class="flex gap-3">
+          <input id="chat-input" type="text" placeholder="Slide into the discussion... or @mention someone" class="flex-1 px-6 py-5 bg-white dark:bg-[#252525] border border-gray-200 dark:border-gray-700 rounded-3xl focus:outline-none">
+          <button onclick="sendMessage()" class="px-10 py-5 bg-violet-600 text-white rounded-3xl">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div id="admin" class="page">
+      <div class="max-w-md mx-auto bg-white dark:bg-[#252525] p-10 rounded-3xl">
+        <h2 class="text-3xl font-semibold mb-8">Admin Settings</h2>
+        <label class="block text-sm mb-2">Platform Name</label>
+        <input id="custom-name-input" value="InkCanvas" class="w-full px-6 py-4 border rounded-2xl mb-8">
+        <label class="block text-sm mb-2">Accent Color</label>
+        <input id="color-picker" type="color" value="#7c3aed" class="w-full h-12 rounded-2xl mb-8">
+        <button onclick="applyAdminChanges()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl">Apply Changes Site-wide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+    <span id="toast-text"></span>
+  </div>
+
+  <script>
+    let currentPage = 'dashboard';
+    function navigate(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById(page);
+      if (target) target.classList.add('active');
+      currentPage = page;
+    }
+
+    function toggleMode() {
+      document.documentElement.classList.toggle('dark');
+      const toggle = document.getElementById('mode-toggle');
+      toggle.textContent = document.documentElement.classList.contains('dark') ? '🌙' : '🌞';
+    }
+
+    // Sample Feed Posts
+    function loadFeed() {
+      const postsHTML = `
+        <div class="bg-white dark:bg-[#252525] p-8 rounded-3xl">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-violet-200 dark:bg-violet-900 rounded-2xl flex-shrink-0"></div>
+            <div class="flex-1">
+              <p class="font-medium">Sarah Chen <span class="text-gray-500 text-sm">• 3h ago</span></p>
+              <p class="mt-3 text-lg">"Finding quiet moments in a noisy world changed how I write..."</p>
+              <button onclick="echoPost(this)" class="mt-6 text-violet-600 hover:underline">Echo this post</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('feed-posts').innerHTML = postsHTML;
+    }
+
+    function echoPost(el) {
+      showToast("Echoed to your profile feed ✨");
+    }
+
+    // Editor Functions
+    function saveDraft() {
+      showToast("All changes saved to cloud.");
+    }
+
+    function publishPost() {
+      showToast("Your post is live! Shared with the World.");
+      setTimeout(() => navigate('feed'), 1500);
+    }
+
+    function updateProfile() {
+      showToast("Your profile is updated.");
+    }
+
+    // Chat Simulation
+    let messages = [];
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      if (!input.value.trim()) return;
+      messages.push({user: "You", text: input.value});
+      renderChat();
+      input.value = '';
+      setTimeout(() => {
+        messages.push({user: "Alex Rivera", text: "Love this direction!"});
+        renderChat();
+      }, 800);
+    }
+
+    function renderChat() {
+      const win = document.getElementById('chat-window');
+      win.innerHTML = messages.map(m => `
+        <div class="flex gap-3 ${m.user === "You" ? "justify-end" : ""}">
+          <div class="${m.user === "You" ? "bg-violet-600 text-white" : "bg-gray-100 dark:bg-gray-800"} px-6 py-3 rounded-3xl max-w-xs">
+            <strong class="text-xs">${m.user}</strong><br>${m.text}
+          </div>
+        </div>
+      `).join('');
+      win.scrollTop = win.scrollHeight;
+    }
+
+    // Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2800);
+    }
+
+    function applyAdminChanges() {
+      const newName = document.getElementById('custom-name-input').value;
+      document.getElementById('platform-name').textContent = newName;
+      showToast("Platform customizations applied successfully.");
+    }
+
+    // Init
+    window.onload = () => {
+      loadFeed();
+      navigate('dashboard');
+      console.log("✅ Backend simulation active: Local storage + JS state");
+    };
+  </script>
 </body>
 </html>
